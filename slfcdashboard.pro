@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
+QT       += core gui webkit network xml
 
 TARGET = slfcdashboard
 TEMPLATE = app
@@ -20,3 +20,6 @@ HEADERS  += mainwindow.h++ \
 FORMS    += mainwindow.ui
 
 CONFIG += console
+
+OTHER_FILES += \
+    config.xml

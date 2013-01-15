@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QtXml/QtXml>
 #include <QTimer>
 #include "scrolltext.h++"
 
@@ -20,6 +21,9 @@ public:
 private:
     Ui::MainWindow *ui;
     QTimer refreshTimer;
+    QDomDocument configDocument;
+    QList<QString> calendars;
+    QString m6calendar;
 
 private slots:
     virtual void refresh_timer();
