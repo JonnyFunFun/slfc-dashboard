@@ -30,6 +30,10 @@ MainWindow::MainWindow(QWidget *parent) :
         return;
     }
 
+    // Refresh timer
+    connect(&refreshTimer, SIGNAL(timeout()), this, SLOT(refresh_timer()));
+    refreshTimer.setInterval(3600000); // 1 hr
+
     QDomNodeList calList = configDocument.documentElement().elementsByTagName("calendars").at(0).toElement().elementsByTagName("feed");
     qDebug() << QString("Opening %1 calendars...").arg(calList.count());
 
@@ -37,7 +41,10 @@ MainWindow::MainWindow(QWidget *parent) :
     {
         for (int i = 0; i < calList.count(); i++)
         {
-            calendars.append(QString(calList.at(i).attributes().namedItem("url").nodeValue()));
+            GoogleCalendar *cal = new GoogleCalendar(this, calList.at(i).attributes().namedItem("url").nodeValue());
+            connect(cal, SIGNAL(refreshComplete()), this, SLOT(redraw()));
+            connect(&refreshTimer, SIGNAL(timeout()), cal, SLOT(refreshCalendar()));
+            calendars.append(cal);
         }
     }
 
@@ -67,23 +74,28 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->upcomingEventsLabel->setGeometry(0, 0, width(), qFloor(height()*0.08));
     ui->upcomingEventsLabel->setFont(QFont("Courier", height()*0.06));
 
-
-
     // Scrolling text
     ui->scrollText->setFont(QFont("Courier", height()*0.075));
     ui->scrollText->setText("Hello world! All your base are belong to us!");
 
-    // Refresh timer
-    connect(&refreshTimer, SIGNAL(timeout()), this, SLOT(refresh_timer()));
-    refreshTimer.setInterval(3600000); // 1 hr
+    // start the timer up
+    refreshTimer.start();
 }
 
 MainWindow::~MainWindow()
 {
+    QList<CalendarEvent*> upcoming = calendars.at(0)->upcoming();
+    for (int i = 0; i < upcoming.count(); ++i)
+        qDebug() << upcoming.at(i)->toString();
     delete ui;
 }
 
 void MainWindow::refresh_timer()
 {
     // Refresh our dataz
+}
+
+void MainWindow::redraw()
+{
+    // Refresh our views
 }

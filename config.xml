@@ -2,10 +2,10 @@
 
 <config>
     <calendars>
-        <feed url="https://www.google.com/calendar/feeds/southlockportfire.com_8cmolovhrkt32lmpmv4161h4v0%40group.calendar.google.com/private-4f3921c4532e8253e14e8641ceed31dc/basic"/>
-        <feed url="https://www.google.com/calendar/feeds/southlockportfire.com_c4mlfd1alll5jjs6faj28795oo%40group.calendar.google.com/private-d496ec06b819d9bb677dd5843c159c83/basic"/>
+        <feed url="https://www.google.com/calendar/feeds/southlockportfire.com_8cmolovhrkt32lmpmv4161h4v0@group.calendar.google.com/private-4f3921c4532e8253e14e8641ceed31dc/full"/>
+        <feed url="https://www.google.com/calendar/feeds/southlockportfire.com_c4mlfd1alll5jjs6faj28795oo@group.calendar.google.com/private-d496ec06b819d9bb677dd5843c159c83/full"/>
     </calendars>
-    <m6takehome calendar="https://www.google.com/calendar/feeds/southlockportfire.com_91vcr9qle0nd63nk192v3hpln0%40group.calendar.google.com/private-3c053ba45be96cb58dae4c8bd06d856e/basic"/>
+    <m6takehome calendar="https://www.google.com/calendar/feeds/southlockportfire.com_91vcr9qle0nd63nk192v3hpln0@group.calendar.google.com/private-3c053ba45be96cb58dae4c8bd06d856e/full"/>
     <news>
         <showlocal>true</showlocal>
         <rss>

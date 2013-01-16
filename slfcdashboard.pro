@@ -12,10 +12,16 @@ TEMPLATE = app
 
 SOURCES += main.cpp\
         mainwindow.cpp \
-    scrolltext.cpp
+    scrolltext.cpp \
+    googlecalendar.cpp \
+    calendarevent.cpp \
+    rfc3339.cpp
 
 HEADERS  += mainwindow.h++ \
-    scrolltext.h++
+    scrolltext.h++ \
+    googlecalendar.h++ \
+    calendarevent.h++ \
+    rfc3339.h++
 
 FORMS    += mainwindow.ui
 
