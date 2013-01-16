@@ -52,9 +52,10 @@ MainWindow::MainWindow(QWidget *parent) :
     calList = configDocument.documentElement().elementsByTagName("m6takehome");
     if (calList.count() > 0)
     {
-        m6calendar = QString(calList.at(0).attributes().namedItem("calendar").nodeValue());
+        m6calendar = new GoogleCalendar(this, calList.at(0).attributes().namedItem("calendar").nodeValue());
         qDebug() << "Found M6 Takehome calendar.";
     } else {
+        m6calendar = 0;
         qWarning() << "No M6 Takehome calendar found.";
     }
 
@@ -73,13 +74,28 @@ MainWindow::MainWindow(QWidget *parent) :
     // Page Labels
     ui->upcomingEventsLabel->setGeometry(0, 0, width(), qFloor(height()*0.08));
     ui->upcomingEventsLabel->setFont(QFont("Courier", height()*0.06));
+    ui->m6TakeHomeLabel->setGeometry(0, 0, width(), qFloor(height()*0.08));
+    ui->m6TakeHomeLabel->setFont(QFont("Courier", height()*0.06));
+
+    // Upcoming events page
+    ui->list_upcoming->setGeometry(0, qFloor(height()*0.08)+25, width(), height());
+    ui->list_upcoming->setFont(QFont("Courier", height()*0.07));
+
+    // m6 Takehome page
+    ui->list_m6takehome->setGeometry(0, qFloor(height()*0.08)+25, width(), height());
+    ui->list_m6takehome->setFont(QFont("Courier", height()*0.07));
 
     // Scrolling text
     ui->scrollText->setFont(QFont("Courier", height()*0.075));
     ui->scrollText->setText("Hello world! All your base are belong to us!");
 
-    // start the timer up
+    // progress timer for switching between screens
+    connect(&progressTimer, SIGNAL(timeout()), this, SLOT(progress_timer()));
+    progressTimer.setInterval(30000); // 30 seconds
+
+    // start the timers up
     refreshTimer.start();
+    progressTimer.start();
 }
 
 MainWindow::~MainWindow()
@@ -92,10 +108,60 @@ MainWindow::~MainWindow()
 
 void MainWindow::refresh_timer()
 {
-    // Refresh our dataz
+    // Refresh data other than the signal/slot connected data
+}
+
+void MainWindow::progress_timer()
+{
+    // Progress to the next screen
+    int next = ui->stack->currentIndex()+1;
+    if (next > ui->stack->count() - 1)
+        next = 0;
+    ui->stack->setCurrentIndex(next);
 }
 
 void MainWindow::redraw()
 {
     // Refresh our views
+    // upcoming events
+    ui->list_upcoming->clear();
+    QList<CalendarEvent*> upcoming;
+    for (int i = 0; i < calendars.count(); ++i)
+        upcoming.append(calendars.at(i)->upcoming(5));
+    qSort(upcoming.begin(), upcoming.end(), CalendarEventComparator());
+    for (int i = 0; i < upcoming.count(); ++i)
+        ui->list_upcoming->addItem(upcoming.at(i)->toString());
+    // m6 takehome
+    if (m6calendar == 0) {
+        ui->list_m6takehome->clear();
+        ui->list_m6takehome->addItem("There was an error loading the m6 calendar");
+    } else {
+        ui->list_m6takehome->clear();
+        ui->list_m6takehome->addItem(" ");
+        QList<CalendarEvent*> upcoming = m6calendar->upcoming(2);
+        if (upcoming.count() >= 1) {
+            if (upcoming.at(0)->start_date < QDateTime::currentDateTime()) {
+                // Currently signed out
+                ui->list_m6takehome->addItem(QString("Current EMT: %1").arg(upcoming.at(0)->title));
+                ui->list_m6takehome->addItem(QString("Until %1").arg(upcoming.at(0)->end_date.toString("hh:mm")));
+                ui->list_m6takehome->addItem(" ");
+            } else {
+                ui->list_m6takehome->addItem("No EMT currently assigned.");
+                ui->list_m6takehome->addItem(" ");
+            }
+            if (upcoming.count() == 1) {
+                ui->list_m6takehome->addItem("There are no future shifts scheduled.");
+            } else {
+                ui->list_m6takehome->addItem(QString("Next: %1").arg(upcoming.at(1)->title));
+                ui->list_m6takehome->addItem(QString("On %1 at %2").arg(upcoming.at(1)->start_date.toString("ddd MMM dd")).arg(upcoming.at(1)->start_date.toString("hh:mm")));
+            }
+        } else {
+            ui->list_m6takehome->addItem(" ");
+            ui->list_m6takehome->addItem("There are no scheduled shifts.");
+        }
+    }
+
+    // Center stuff
+    for (int i = 0; i < ui->list_m6takehome->count(); ++i)
+        ui->list_m6takehome->item(i)->setTextAlignment(Qt::AlignCenter);
 }

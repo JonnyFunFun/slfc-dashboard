@@ -65,14 +65,11 @@ void GoogleCalendar::dataDownloadComplete(QNetworkReply *rep)
 
 void GoogleCalendar::purgePast()
 {
+    QList<CalendarEvent*> goodEvents;
     for (int i = 0; i < events.count(); ++i)
     {
-        if (events.at(i)->end_date < QDateTime::currentDateTime())
-        {
-            events.removeAt(i);
-            purgePast();
-            return;
-        }
+        if (events.at(i)->end_date > QDateTime::currentDateTime())
+            goodEvents.append(events.at(i));
     }
-    return;
+    events = goodEvents;
 }

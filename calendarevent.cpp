@@ -11,11 +11,11 @@ CalendarEvent::CalendarEvent(QDomNode *xmlNode)
 
 QString CalendarEvent::toString()
 {
-    return QString("%1 - From %2 to %3").arg(title).arg(start_date.toString("dd.MM.yyyy hh:mm")).arg(end_date.toString("dd.MM.yyyy hh:mm"));
+    return QString("%1 - %2").arg(start_date.toString("ddd MMM dd hh:mm"), title);
 }
 
 CalendarEventComparator::CalendarEventComparator() {}
 bool CalendarEventComparator::operator ()(const CalendarEvent *left, const CalendarEvent *right) const
 {
-    return left->start_date > right->start_date;
+    return left->start_date < right->start_date;
 }

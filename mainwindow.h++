@@ -26,13 +26,15 @@ public slots:
 private:
     Ui::MainWindow *ui;
     QTimer refreshTimer;
+    QTimer progressTimer;
     QDomDocument configDocument;
     QList<GoogleCalendar*> calendars;
-    QString m6calendar;
+    GoogleCalendar *m6calendar;
     QEventLoop evloop;
 
 private slots:
     virtual void refresh_timer();
+    virtual void progress_timer();
 };
 
 #endif // MAINWINDOW_H
