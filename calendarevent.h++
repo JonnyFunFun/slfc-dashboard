@@ -8,7 +8,7 @@ class CalendarEvent
 {
 public:
     friend class CalendarEventComparator;
-    CalendarEvent(QDomNode *xmlNode);
+    CalendarEvent(QString event_title, QDateTime start, QDateTime end);
     QString title;
     QDateTime start_date;
     QDateTime end_date;

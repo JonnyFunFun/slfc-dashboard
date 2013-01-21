@@ -73,20 +73,20 @@ MainWindow::MainWindow(QWidget *parent) :
 
     // Page Labels
     ui->upcomingEventsLabel->setGeometry(0, 0, width(), qFloor(height()*0.08));
-    ui->upcomingEventsLabel->setFont(QFont("Courier", height()*0.06));
+    ui->upcomingEventsLabel->setFont(QFont("sans-serif", height()*0.06));
     ui->m6TakeHomeLabel->setGeometry(0, 0, width(), qFloor(height()*0.08));
-    ui->m6TakeHomeLabel->setFont(QFont("Courier", height()*0.06));
+    ui->m6TakeHomeLabel->setFont(QFont("sans-serif", height()*0.06));
 
     // Upcoming events page
     ui->list_upcoming->setGeometry(0, qFloor(height()*0.08)+25, width(), height());
-    ui->list_upcoming->setFont(QFont("Courier", height()*0.07));
+    ui->list_upcoming->setFont(QFont("sans-serif", height()*0.07));
 
     // m6 Takehome page
     ui->list_m6takehome->setGeometry(0, qFloor(height()*0.08)+25, width(), height());
-    ui->list_m6takehome->setFont(QFont("Courier", height()*0.07));
+    ui->list_m6takehome->setFont(QFont("sans-serif", height()*0.07));
 
     // Scrolling text
-    ui->scrollText->setFont(QFont("Courier", height()*0.075));
+    ui->scrollText->setFont(QFont("sans-serif", height()*0.075));
     ui->scrollText->setText("Hello world! All your base are belong to us!");
 
     // progress timer for switching between screens
@@ -127,7 +127,7 @@ void MainWindow::redraw()
     ui->list_upcoming->clear();
     QList<CalendarEvent*> upcoming;
     for (int i = 0; i < calendars.count(); ++i)
-        upcoming.append(calendars.at(i)->upcoming(5));
+        upcoming.append(calendars.at(i)->upcoming(10));
     qSort(upcoming.begin(), upcoming.end(), CalendarEventComparator());
     for (int i = 0; i < upcoming.count(); ++i)
         ui->list_upcoming->addItem(upcoming.at(i)->toString());
@@ -145,15 +145,21 @@ void MainWindow::redraw()
                 ui->list_m6takehome->addItem(QString("Current EMT: %1").arg(upcoming.at(0)->title));
                 ui->list_m6takehome->addItem(QString("Until %1").arg(upcoming.at(0)->end_date.toString("hh:mm")));
                 ui->list_m6takehome->addItem(" ");
+                if (upcoming.count() == 2) {
+                    ui->list_m6takehome->addItem(QString("Next: %1").arg(upcoming.at(1)->title));
+                    ui->list_m6takehome->addItem(QString("On %1 at %2").arg(upcoming.at(1)->start_date.toString("ddd MMM dd")).arg(upcoming.at(1)->start_date.toString("hh:mm")));
+                } else {
+                    ui->list_m6takehome->addItem("There are no upcoming shifts scheduled.");
+                }
             } else {
                 ui->list_m6takehome->addItem("No EMT currently assigned.");
                 ui->list_m6takehome->addItem(" ");
-            }
-            if (upcoming.count() == 1) {
-                ui->list_m6takehome->addItem("There are no future shifts scheduled.");
-            } else {
-                ui->list_m6takehome->addItem(QString("Next: %1").arg(upcoming.at(1)->title));
-                ui->list_m6takehome->addItem(QString("On %1 at %2").arg(upcoming.at(1)->start_date.toString("ddd MMM dd")).arg(upcoming.at(1)->start_date.toString("hh:mm")));
+                if (upcoming.count() == 1) {
+                    ui->list_m6takehome->addItem(QString("Next: %1").arg(upcoming.at(0)->title));
+                    ui->list_m6takehome->addItem(QString("On %1 at %2").arg(upcoming.at(0)->start_date.toString("ddd MMM dd")).arg(upcoming.at(0)->start_date.toString("hh:mm")));
+                } else {
+                    ui->list_m6takehome->addItem("There are no upcoming shifts scheduled.");
+                }
             }
         } else {
             ui->list_m6takehome->addItem(" ");

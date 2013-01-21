@@ -2,6 +2,8 @@
 #include <QDebug>
 #include <QtXml/QtXml>
 #include <QEventLoop>
+#include <QDateTime>
+#include "rfc3339.h++"
 
 GoogleCalendar::GoogleCalendar(QObject *parent, QString url) :
     QObject(parent)
@@ -28,6 +30,13 @@ QList<CalendarEvent*> GoogleCalendar::upcoming(int count)
 
 void GoogleCalendar::refreshCalendar()
 {
+    // recurrence-expansion-start=2013-01-21T00:00:00-05:00&recurrence-expansion-end=2013-03-21T00:00:00-05:00
+    QList<QPair<QString, QString> > query;
+    query.append(QPair<QString, QString> ("recurrence-expansion-start",QDateTime::currentDateTime().toString("yyyy-MM-ddThh:mm:ss-05:00")));
+    query.append(QPair<QString, QString> ("recurrence-expansion-end",QDateTime::currentDateTime().addMonths(3).toString("yyyy-MM-ddThh:mm:ss-05:00")));
+    query.append(QPair<QString, QString> ("start-min",QDateTime::currentDateTime().toString("yyyy-MM-ddThh:mm:ss-05:00")));
+    webpath.setQueryItems(query);
+    qDebug() << webpath.toString();
     access_manager->get(QNetworkRequest(webpath));
 }
 
@@ -55,10 +64,19 @@ void GoogleCalendar::dataDownloadComplete(QNetworkReply *rep)
     }
     events.clear();
     qDebug() << QString("Loading %1 entries").arg(xml->documentElement().elementsByTagName("entry").count());
-    for (int i = 0; i < xml->documentElement().elementsByTagName("entry").count(); ++i)
-        events.append(new CalendarEvent(&xml->documentElement().elementsByTagName("entry").at(i)));
+    for (int i = 0; i < xml->documentElement().elementsByTagName("entry").count(); ++i) {
+        QDomNode event = xml->documentElement().elementsByTagName("entry").at(i);
+        QString title = event.firstChildElement("title").text();
+        for (int x = 0; x < event.childNodes().count(); ++x) {
+            if (event.childNodes().at(x).nodeName() == "gd:when") {
+                QDateTime start = RFC3339::fromString(event.childNodes().at(x).attributes().namedItem("startTime").nodeValue());
+                QDateTime end = RFC3339::fromString(event.childNodes().at(x).attributes().namedItem("endTime").nodeValue());
+                events.append(new CalendarEvent(title, start, end));
+            }
+        }
+    }
     qSort(events.begin(), events.end(), CalendarEventComparator());
-    purgePast();
+    //purgePast();
     emit refreshComplete();
     delete xml;
 }
