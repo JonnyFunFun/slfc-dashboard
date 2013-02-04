@@ -1,5 +1,6 @@
 #include "mainwindow.h++"
 #include "ui_mainwindow.h"
+#include "httpswebview.h++"
 
 #include <QDebug>
 #include <QtXml/QtXml>
@@ -10,6 +11,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
+    ui->setupUi(this);
     // Open our config files and load some calendars
     configDocument = QDomDocument("config");
 #if __APPLE__
@@ -59,8 +61,16 @@ MainWindow::MainWindow(QWidget *parent) :
         qWarning() << "No M6 Takehome calendar found.";
     }
 
-    ui->setupUi(this);
-    this->showFullScreen();
+    // http server
+    if (configDocument.documentElement().elementsByTagName("ticker").at(0).attributes().namedItem("enabled").nodeValue() == "true")
+    {
+        ticker_http = new TickerHttpServer(configDocument.documentElement().elementsByTagName("ticker").at(0).attributes().namedItem("httpPort").nodeValue().toInt(), this);
+    }
+
+    // active911 web view
+    active911DeviceId = configDocument.documentElement().elementsByTagName("active911").at(0).attributes().namedItem("deviceId").nodeValue();
+
+    //this->showFullScreen();
     this->setStyleSheet("background-color: black; color: white;");
 
     // Determine our constraints and calculate where our widgets are all going to be placed
@@ -85,17 +95,24 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->list_m6takehome->setGeometry(0, qFloor(height()*0.08)+25, width(), height());
     ui->list_m6takehome->setFont(QFont("sans-serif", height()*0.07));
 
+    // Active911 web view
+    ui->active911WebView->setGeometry(0, 0, width(), height());
+    ui->active911WebView->load(QUrl("https://webview.active911.com/"));
+    ui->active911WebView->show();
+
     // Scrolling text
     ui->scrollText->setFont(QFont("sans-serif", height()*0.075));
     ui->scrollText->setText("Hello world! All your base are belong to us!");
 
     // progress timer for switching between screens
     connect(&progressTimer, SIGNAL(timeout()), this, SLOT(progress_timer()));
-    progressTimer.setInterval(30000); // 30 seconds
+    //progressTimer.setInterval(30000); // 30 seconds
+    progressTimer.setInterval(5000);
 
     // start the timers up
     refreshTimer.start();
     progressTimer.start();
+
 }
 
 MainWindow::~MainWindow()

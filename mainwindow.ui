@@ -109,6 +109,32 @@
       </property>
      </widget>
     </widget>
+    <widget class="QWidget" name="active911page">
+     <widget class="HttpsWebView" name="active911WebView">
+      <property name="geometry">
+       <rect>
+        <x>90</x>
+        <y>20</y>
+        <width>711</width>
+        <height>431</height>
+       </rect>
+      </property>
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="url">
+       <url>
+        <string>https://webview.active911.com/client/</string>
+       </url>
+      </property>
+      <property name="zoomFactor">
+       <double>0.750000000000000</double>
+      </property>
+     </widget>
+    </widget>
     <widget class="QWidget" name="m6TakeHomePage">
      <widget class="QLabel" name="m6TakeHomeLabel">
       <property name="geometry">
@@ -149,10 +175,20 @@
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
   <customwidget>
+   <class>QWebView</class>
+   <extends>QWidget</extends>
+   <header>QtWebKit/QWebView</header>
+  </customwidget>
+  <customwidget>
    <class>ScrollText</class>
    <extends>QWidget</extends>
    <header location="global">scrolltext.h++</header>
    <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>HttpsWebView</class>
+   <extends>QWebView</extends>
+   <header location="global">httpswebview.h++</header>
   </customwidget>
  </customwidgets>
  <resources/>

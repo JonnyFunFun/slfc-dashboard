@@ -6,6 +6,7 @@
 #include <QTimer>
 #include "scrolltext.h++"
 #include "googlecalendar.h++"
+#include "tickerhttpserver.h++"
 #include <QEventLoop>
 
 namespace Ui {
@@ -31,7 +32,8 @@ private:
     QList<GoogleCalendar*> calendars;
     GoogleCalendar *m6calendar;
     QEventLoop evloop;
-
+    TickerHttpServer *ticker_http;
+    QString active911DeviceId;
 private slots:
     virtual void refresh_timer();
     virtual void progress_timer();
