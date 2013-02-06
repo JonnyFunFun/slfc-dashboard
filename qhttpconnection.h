@@ -50,8 +50,11 @@ public:
 signals:
     void newRequest(QHttpRequest*, QHttpResponse*);
 
-private slots:
+public slots:
+
     void parseRequest();
+
+private slots:
     void socketDisconnected();
 
 private:

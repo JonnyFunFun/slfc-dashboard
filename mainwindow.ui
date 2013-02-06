@@ -113,8 +113,8 @@
      <widget class="HttpsWebView" name="active911WebView">
       <property name="geometry">
        <rect>
-        <x>90</x>
-        <y>20</y>
+        <x>0</x>
+        <y>0</y>
         <width>711</width>
         <height>431</height>
        </rect>

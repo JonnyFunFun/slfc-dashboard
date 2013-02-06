@@ -161,6 +161,8 @@ public:
      */
     QString header(const QString &field) { return m_headers[field]; };
 
+    QHttpConnection* connection() { return m_connection; };
+
     /*!
      * IP Address of the client in dotted decimal format
      */

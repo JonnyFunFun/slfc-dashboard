@@ -12,6 +12,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    currentlyRedrawing = false;
     // Open our config files and load some calendars
     configDocument = QDomDocument("config");
 #if __APPLE__
@@ -64,7 +65,14 @@ MainWindow::MainWindow(QWidget *parent) :
     // http server
     if (configDocument.documentElement().elementsByTagName("ticker").at(0).attributes().namedItem("enabled").nodeValue() == "true")
     {
-        ticker_http = new TickerHttpServer(configDocument.documentElement().elementsByTagName("ticker").at(0).attributes().namedItem("httpPort").nodeValue().toInt(), this);
+        ticker_http = new TickerHttpServer(configDocument.documentElement().elementsByTagName("ticker").at(0).attributes().namedItem("httpPort").nodeValue().toInt(),
+                                           configDocument.documentElement().elementsByTagName("ticker").at(0).attributes().namedItem("authToken").nodeValue(), this);
+        connect(ticker_http, SIGNAL(newMessage(QString,QDateTime)), this, SLOT(handle_new_ticker_message(QString,QDateTime)));
+        tickerMessages.clear();
+        tickerMessages.append(QPair<QString,QDateTime>("There are no ticker messages",QDateTime::currentDateTime()));
+    } else {
+        tickerMessages.clear();
+        tickerMessages.append(QPair<QString,QDateTime>("Ticker server disabled",QDateTime::currentDateTime()));
     }
 
     // active911 web view
@@ -83,9 +91,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
     // Page Labels
     ui->upcomingEventsLabel->setGeometry(0, 0, width(), qFloor(height()*0.08));
-    ui->upcomingEventsLabel->setFont(QFont("sans-serif", height()*0.06));
+    ui->upcomingEventsLabel->setFont(QFont("sans-serif", height()*0.08));
     ui->m6TakeHomeLabel->setGeometry(0, 0, width(), qFloor(height()*0.08));
-    ui->m6TakeHomeLabel->setFont(QFont("sans-serif", height()*0.06));
+    ui->m6TakeHomeLabel->setFont(QFont("sans-serif", height()*0.08));
 
     // Upcoming events page
     ui->list_upcoming->setGeometry(0, qFloor(height()*0.08)+25, width(), height());
@@ -97,12 +105,11 @@ MainWindow::MainWindow(QWidget *parent) :
 
     // Active911 web view
     ui->active911WebView->setGeometry(0, 0, width(), height());
-    ui->active911WebView->load(QUrl("https://webview.active911.com/"));
-    ui->active911WebView->show();
+    ui->active911WebView->load(QUrl("http://webview.active911.com/"));
 
     // Scrolling text
     ui->scrollText->setFont(QFont("sans-serif", height()*0.075));
-    ui->scrollText->setText("Hello world! All your base are belong to us!");
+    ui->scrollText->setText("Loading...");
 
     // progress timer for switching between screens
     connect(&progressTimer, SIGNAL(timeout()), this, SLOT(progress_timer()));
@@ -112,14 +119,10 @@ MainWindow::MainWindow(QWidget *parent) :
     // start the timers up
     refreshTimer.start();
     progressTimer.start();
-
 }
 
 MainWindow::~MainWindow()
 {
-    QList<CalendarEvent*> upcoming = calendars.at(0)->upcoming();
-    for (int i = 0; i < upcoming.count(); ++i)
-        qDebug() << upcoming.at(i)->toString();
     delete ui;
 }
 
@@ -137,8 +140,25 @@ void MainWindow::progress_timer()
     ui->stack->setCurrentIndex(next);
 }
 
+void MainWindow::handle_new_ticker_message(QString message, QDateTime expiration)
+{
+    tickerMessages.append(QPair<QString,QDateTime>(message, expiration));
+    QList<QPair<QString, QDateTime> > goodMessages;
+    for (int i = 0; i < tickerMessages.count(); ++i)
+    {
+        if (tickerMessages.at(i).second > QDateTime::currentDateTime())
+            goodMessages.append(tickerMessages.at(i));
+    }
+    tickerMessages = goodMessages;
+    redraw();
+}
+
 void MainWindow::redraw()
 {
+    // locking
+    if (currentlyRedrawing)
+        return;
+    currentlyRedrawing = true;
     // Refresh our views
     // upcoming events
     ui->list_upcoming->clear();
@@ -184,7 +204,16 @@ void MainWindow::redraw()
         }
     }
 
+    // Ticker message
+    QString totalMessage;
+    for (int i = 0; i < tickerMessages.count(); ++i)
+        totalMessage += tickerMessages.at(i).first + "  :  ";
+    totalMessage.chop(5);
+    ui->scrollText->setText(totalMessage);
+
     // Center stuff
     for (int i = 0; i < ui->list_m6takehome->count(); ++i)
         ui->list_m6takehome->item(i)->setTextAlignment(Qt::AlignCenter);
+
+    currentlyRedrawing = false;
 }

@@ -14,5 +14,7 @@ int main(int argc, char *argv[])
     // make it happen!
     MainWindow w;
     w.show();
+
+    // main loop
     return a.exec();
 }

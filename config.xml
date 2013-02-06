@@ -11,7 +11,7 @@
         <rss>
         </rss>
     </news>
-    <ticker enabled="true" httpPort="18888">
+    <ticker enabled="true" httpPort="18888" authToken="boobies">
         <user login="jonathan" pass="123ewq"/>
     </ticker>
     <active911 deviceId="XXXX-XXXX"/>
