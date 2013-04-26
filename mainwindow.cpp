@@ -78,7 +78,8 @@ MainWindow::MainWindow(QWidget *parent) :
     // active911 web view
     active911DeviceId = configDocument.documentElement().elementsByTagName("active911").at(0).attributes().namedItem("deviceId").nodeValue();
 
-    //this->showFullScreen();
+    this->showFullScreen();
+
     this->setStyleSheet("background-color: black; color: white;");
 
     // Determine our constraints and calculate where our widgets are all going to be placed
@@ -105,7 +106,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     // Active911 web view
     ui->active911WebView->setGeometry(0, 0, width(), height());
-    ui->active911WebView->load(QUrl("http://webview.active911.com/"));
+    ui->active911WebView->load(QUrl("https://webview.active911.com/client/"));
 
     // Scrolling text
     ui->scrollText->setFont(QFont("sans-serif", height()*0.075));
