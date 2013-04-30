@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QNetworkReply>
 
 namespace Ui {
 class MainWindow;
@@ -19,6 +20,8 @@ private:
     Ui::MainWindow *ui;
 private slots:
     void addTickerMessage();
+    void sendSuccessful();
+    void networkError(QNetworkReply::NetworkError networkError);
 };
 
 #endif // MAINWINDOW_H
