@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui webkit network xml multimedia
+QT       += core gui webkit network xml
 
 TARGET = slfcdashboard
 TEMPLATE = app
