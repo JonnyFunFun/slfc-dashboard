@@ -21,15 +21,16 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
-    
+    bool loadPersistence();
 public slots:
     virtual void redraw();
-
+    virtual void persistData();
 private:
     Ui::MainWindow *ui;
     bool currentlyRedrawing;
     QTimer refreshTimer;
     QTimer progressTimer;
+    QTimer redrawTimer;
     QDomDocument configDocument;
     QList<GoogleCalendar*> calendars;
     QList<QPair<QString,QDateTime> > tickerMessages;

@@ -11,7 +11,7 @@ CalendarEvent::CalendarEvent(QString event_title, QDateTime start, QDateTime end
 
 QString CalendarEvent::toString()
 {
-    return QString("%1 - %2").arg(start_date.toString("ddd MMM dd hh:mm"), title);
+    return QString("%1 - %2").arg(start_date.toString("MMM dd hh:mm"), title);
 }
 
 CalendarEventComparator::CalendarEventComparator() {}

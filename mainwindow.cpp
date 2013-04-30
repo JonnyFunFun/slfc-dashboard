@@ -6,6 +6,8 @@
 #include <QtXml/QtXml>
 #include <QFile>
 #include <qmath.h>
+#include <QSslSocket>
+#include <QColor>
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -33,9 +35,24 @@ MainWindow::MainWindow(QWidget *parent) :
         return;
     }
 
+    bool ok = true;
+    uint32_t progressCycle = configDocument.documentElement().attributes().namedItem("cycleTime").nodeValue().toUInt(&ok);
+    if (!ok)
+        progressCycle = 30;
+    uint32_t refreshCycle = configDocument.documentElement().attributes().namedItem("refreshTime").nodeValue().toUInt(&ok);
+    if (!ok)
+        refreshCycle = 30;
+    uint32_t redrawCycle = configDocument.documentElement().attributes().namedItem("redrawTime").nodeValue().toUInt(&ok);
+    if (!ok)
+        redrawCycle = 10;
+
     // Refresh timer
     connect(&refreshTimer, SIGNAL(timeout()), this, SLOT(refresh_timer()));
-    refreshTimer.setInterval(3600000); // 1 hr
+    refreshTimer.setInterval(refreshCycle * 60000);
+
+    // Redraw timer
+    connect(&redrawTimer, SIGNAL(timeout()), this, SLOT(redraw()));
+    redrawTimer.setInterval(redrawCycle * 60000);
 
     QDomNodeList calList = configDocument.documentElement().elementsByTagName("calendars").at(0).toElement().elementsByTagName("feed");
     qDebug() << QString("Opening %1 calendars...").arg(calList.count());
@@ -69,7 +86,9 @@ MainWindow::MainWindow(QWidget *parent) :
                                            configDocument.documentElement().elementsByTagName("ticker").at(0).attributes().namedItem("authToken").nodeValue(), this);
         connect(ticker_http, SIGNAL(newMessage(QString,QDateTime)), this, SLOT(handle_new_ticker_message(QString,QDateTime)));
         tickerMessages.clear();
-        tickerMessages.append(QPair<QString,QDateTime>("There are no ticker messages",QDateTime::currentDateTime()));
+        // Load any saved data
+        if (!loadPersistence())
+            tickerMessages.append(QPair<QString,QDateTime>("There are no ticker messages",QDateTime::currentDateTime()));
     } else {
         tickerMessages.clear();
         tickerMessages.append(QPair<QString,QDateTime>("Ticker server disabled",QDateTime::currentDateTime()));
@@ -78,13 +97,13 @@ MainWindow::MainWindow(QWidget *parent) :
     // active911 web view
     active911DeviceId = configDocument.documentElement().elementsByTagName("active911").at(0).attributes().namedItem("deviceId").nodeValue();
 
-    this->showFullScreen();
+    //this->showFullScreen();
 
     this->setStyleSheet("background-color: black; color: white;");
 
     // Determine our constraints and calculate where our widgets are all going to be placed
-    ui->scrollText->setGeometry(0, qCeil(height()*0.9), width(), qCeil(height()*0.1));
-    ui->scrollText->setFixedHeight(qCeil(height()*0.1));
+    ui->scrollText->setGeometry(0, qCeil(height()*0.9), width(), qCeil(height()*0.08));
+    ui->scrollText->setFixedHeight(qCeil(height()*0.09));
 
     // Our stack
     ui->stack->setGeometry(0, 0, width(), qFloor(height()*0.9));
@@ -92,44 +111,61 @@ MainWindow::MainWindow(QWidget *parent) :
 
     // Page Labels
     ui->upcomingEventsLabel->setGeometry(0, 0, width(), qFloor(height()*0.08));
-    ui->upcomingEventsLabel->setFont(QFont("sans-serif", height()*0.08));
+    ui->upcomingEventsLabel->setFont(QFont("Droid Sans Mono", height()*0.08));
     ui->m6TakeHomeLabel->setGeometry(0, 0, width(), qFloor(height()*0.08));
-    ui->m6TakeHomeLabel->setFont(QFont("sans-serif", height()*0.08));
+    ui->m6TakeHomeLabel->setFont(QFont("Droid Sans Mono", height()*0.08));
 
     // Upcoming events page
     ui->list_upcoming->setGeometry(0, qFloor(height()*0.08)+25, width(), height());
-    ui->list_upcoming->setFont(QFont("sans-serif", height()*0.07));
+    ui->list_upcoming->setFont(QFont("Droid Sans Mono", height()*0.07));
 
     // m6 Takehome page
     ui->list_m6takehome->setGeometry(0, qFloor(height()*0.08)+25, width(), height());
-    ui->list_m6takehome->setFont(QFont("sans-serif", height()*0.07));
+    ui->list_m6takehome->setFont(QFont("Droid Sans Mono", height()*0.07));
 
     // Active911 web view
     ui->active911WebView->setGeometry(0, 0, width(), height());
-    ui->active911WebView->load(QUrl("https://webview.active911.com/client/"));
+    ui->active911WebView->setUrl(QUrl("http://webview.active911.com/client/"));
 
     // Scrolling text
-    ui->scrollText->setFont(QFont("sans-serif", height()*0.075));
+    ui->scrollText->setFont(QFont("Droid Sans Mono", height()*0.075));
     ui->scrollText->setText("Loading...");
 
     // progress timer for switching between screens
     connect(&progressTimer, SIGNAL(timeout()), this, SLOT(progress_timer()));
-    //progressTimer.setInterval(30000); // 30 seconds
-    progressTimer.setInterval(5000);
+    progressTimer.setInterval(progressCycle * 1000);
+
+    if (!QSslSocket::supportsSsl()) {
+        delete ui->active911page;
+        qWarning() << "Device does not support SSL - disabling Active911";
+    } else if (configDocument.documentElement().elementsByTagName("active911").at(0).attributes().namedItem("enabled").nodeValue().toLower() == "false") {
+        delete ui->active911page;
+    }
+    if (calList.at(0).attributes().namedItem("enabled").nodeValue().toLower() == "false") {
+        delete ui->m6TakeHomePage;
+    }
 
     // start the timers up
     refreshTimer.start();
     progressTimer.start();
+
 }
 
 MainWindow::~MainWindow()
 {
-    delete ui;
 }
 
 void MainWindow::refresh_timer()
 {
     // Refresh data other than the signal/slot connected data
+    QList<QPair<QString, QDateTime> > goodMessages;
+    for (int i = 0; i < tickerMessages.count(); ++i)
+    {
+        if (tickerMessages.at(i).second > QDateTime::currentDateTime())
+            goodMessages.append(tickerMessages.at(i));
+    }
+    tickerMessages = goodMessages;
+    redraw();
 }
 
 void MainWindow::progress_timer()
@@ -139,6 +175,15 @@ void MainWindow::progress_timer()
     if (next > ui->stack->count() - 1)
         next = 0;
     ui->stack->setCurrentIndex(next);
+    int snap = next;
+    while (ui->stack->currentWidget()->isHidden()) {
+        ++next;
+        if (next > ui->stack->count() - 1)
+            next = 0;
+        ui->stack->setCurrentIndex(next);
+        if (snap == next)
+            break; // prevent overflows
+    }
 }
 
 void MainWindow::handle_new_ticker_message(QString message, QDateTime expiration)
@@ -167,48 +212,57 @@ void MainWindow::redraw()
     for (int i = 0; i < calendars.count(); ++i)
         upcoming.append(calendars.at(i)->upcoming(10));
     qSort(upcoming.begin(), upcoming.end(), CalendarEventComparator());
-    for (int i = 0; i < upcoming.count(); ++i)
-        ui->list_upcoming->addItem(upcoming.at(i)->toString());
+    for (int i = 0; i < upcoming.count(); ++i) {
+        if (upcoming.at(i)->start_date < QDateTime::currentDateTime()) {
+            // Event is current, highlight
+            QListWidgetItem* item = new QListWidgetItem(upcoming.at(i)->toString());
+            item->setBackgroundColor(QColor(255, 255, 0, 128));
+            ui->list_upcoming->addItem(item);
+        } else
+            ui->list_upcoming->addItem(upcoming.at(i)->toString());
+    }
     // m6 takehome
-    if (m6calendar == 0) {
-        ui->list_m6takehome->clear();
-        ui->list_m6takehome->addItem("There was an error loading the m6 calendar");
-    } else {
-        ui->list_m6takehome->clear();
-        ui->list_m6takehome->addItem(" ");
-        QList<CalendarEvent*> upcoming = m6calendar->upcoming(2);
-        if (upcoming.count() >= 1) {
-            if (upcoming.at(0)->start_date < QDateTime::currentDateTime()) {
-                // Currently signed out
-                ui->list_m6takehome->addItem(QString("Current EMT: %1").arg(upcoming.at(0)->title));
-                ui->list_m6takehome->addItem(QString("Until %1").arg(upcoming.at(0)->end_date.toString("hh:mm")));
-                ui->list_m6takehome->addItem(" ");
-                if (upcoming.count() == 2) {
-                    ui->list_m6takehome->addItem(QString("Next: %1").arg(upcoming.at(1)->title));
-                    ui->list_m6takehome->addItem(QString("On %1 at %2").arg(upcoming.at(1)->start_date.toString("ddd MMM dd")).arg(upcoming.at(1)->start_date.toString("hh:mm")));
+    if (ui->m6TakeHomePage) {
+        if (m6calendar == 0) {
+            ui->list_m6takehome->clear();
+            ui->list_m6takehome->addItem("There was an error loading the m6 calendar");
+        } else {
+            ui->list_m6takehome->clear();
+            ui->list_m6takehome->addItem(" ");
+            QList<CalendarEvent*> upcoming = m6calendar->upcoming(2);
+            if (upcoming.count() >= 1) {
+                if (upcoming.at(0)->start_date < QDateTime::currentDateTime()) {
+                    // Currently signed out
+                    ui->list_m6takehome->addItem(QString("Current EMT: %1").arg(upcoming.at(0)->title));
+                    ui->list_m6takehome->addItem(QString("Until %1").arg(upcoming.at(0)->end_date.toString("hh:mm")));
+                    ui->list_m6takehome->addItem(" ");
+                    if (upcoming.count() == 2) {
+                        ui->list_m6takehome->addItem(QString("Next: %1").arg(upcoming.at(1)->title));
+                        ui->list_m6takehome->addItem(QString("On %1 at %2").arg(upcoming.at(1)->start_date.toString("ddd MMM dd")).arg(upcoming.at(1)->start_date.toString("hh:mm")));
+                    } else {
+                        ui->list_m6takehome->addItem("There are no upcoming shifts scheduled.");
+                    }
                 } else {
-                    ui->list_m6takehome->addItem("There are no upcoming shifts scheduled.");
+                    ui->list_m6takehome->addItem("No EMT currently assigned.");
+                    ui->list_m6takehome->addItem(" ");
+                    if (upcoming.count() == 1) {
+                        ui->list_m6takehome->addItem(QString("Next: %1").arg(upcoming.at(0)->title));
+                        ui->list_m6takehome->addItem(QString("On %1 at %2").arg(upcoming.at(0)->start_date.toString("ddd MMM dd")).arg(upcoming.at(0)->start_date.toString("hh:mm")));
+                    } else {
+                        ui->list_m6takehome->addItem("There are no upcoming shifts scheduled.");
+                    }
                 }
             } else {
-                ui->list_m6takehome->addItem("No EMT currently assigned.");
                 ui->list_m6takehome->addItem(" ");
-                if (upcoming.count() == 1) {
-                    ui->list_m6takehome->addItem(QString("Next: %1").arg(upcoming.at(0)->title));
-                    ui->list_m6takehome->addItem(QString("On %1 at %2").arg(upcoming.at(0)->start_date.toString("ddd MMM dd")).arg(upcoming.at(0)->start_date.toString("hh:mm")));
-                } else {
-                    ui->list_m6takehome->addItem("There are no upcoming shifts scheduled.");
-                }
+                ui->list_m6takehome->addItem("There are no scheduled shifts.");
             }
-        } else {
-            ui->list_m6takehome->addItem(" ");
-            ui->list_m6takehome->addItem("There are no scheduled shifts.");
         }
     }
 
     // Ticker message
     QString totalMessage;
     for (int i = 0; i < tickerMessages.count(); ++i)
-        totalMessage += tickerMessages.at(i).first + "  :  ";
+        totalMessage += tickerMessages.at(i).first + "  ---  ";
     totalMessage.chop(5);
     ui->scrollText->setText(totalMessage);
 
@@ -217,4 +271,53 @@ void MainWindow::redraw()
         ui->list_m6takehome->item(i)->setTextAlignment(Qt::AlignCenter);
 
     currentlyRedrawing = false;
+    persistData();
+}
+
+void MainWindow::persistData()
+{
+#if __APPLE__
+    // Stupid OS X
+    QFile persistence("../../../persistence.dat");
+#else
+    QFile persistence("persistence.dat");
+#endif
+    persistence.open(QIODevice::ReadWrite | QIODevice::Truncate | QIODevice::Text);
+    QTextStream out(&persistence);
+    for (int i = 0; i < tickerMessages.count(); ++i) {
+        out << tickerMessages.at(i).second.toMSecsSinceEpoch() << endl;
+        out << tickerMessages.at(i).first << endl;
+    }
+    persistence.flush();
+    persistence.close();
+}
+
+bool MainWindow::loadPersistence()
+{
+#if __APPLE__
+    // Stupid OS X
+    QFile persistence("../../../persistence.dat");
+#else
+    QFile persistence("persistence.dat");
+#endif
+    try {
+        persistence.open(QIODevice::ReadOnly | QIODevice::Text);
+        QTextStream in(&persistence);
+        while (!in.atEnd()) {
+            bool ok = true;
+            qint64 expirationEpoch = in.readLine().toLong(&ok);
+            QString message = in.readLine();
+            if (ok) {
+                QDateTime expiration = QDateTime::fromMSecsSinceEpoch(expirationEpoch);
+                if (expiration > QDateTime::currentDateTime())
+                    tickerMessages.append(QPair<QString,QDateTime>(message, expiration));
+            }
+        }
+        persistence.close();
+        return true;
+    } catch (std::exception &e) {
+        qWarning() << "Unable to load persistence";
+        qWarning() << e.what();
+        return false;
+    }
 }

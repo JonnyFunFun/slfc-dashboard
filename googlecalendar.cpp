@@ -34,7 +34,7 @@ void GoogleCalendar::refreshCalendar()
     QList<QPair<QString, QString> > query;
     query.append(QPair<QString, QString> ("recurrence-expansion-start",QDateTime::currentDateTime().toString("yyyy-MM-ddThh:mm:ss-05:00")));
     query.append(QPair<QString, QString> ("recurrence-expansion-end",QDateTime::currentDateTime().addMonths(3).toString("yyyy-MM-ddThh:mm:ss-05:00")));
-    query.append(QPair<QString, QString> ("start-min",QDateTime::currentDateTime().toString("yyyy-MM-ddThh:mm:ss-05:00")));
+    query.append(QPair<QString, QString> ("start-min",QDateTime::currentDateTime().toString("yyyy-MM-ddT00:00:00-05:00")));
     webpath.setQueryItems(query);
     qDebug() << webpath.toString();
     access_manager->get(QNetworkRequest(webpath));
@@ -76,7 +76,7 @@ void GoogleCalendar::dataDownloadComplete(QNetworkReply *rep)
         }
     }
     qSort(events.begin(), events.end(), CalendarEventComparator());
-    //purgePast();
+    purgePast();
     emit refreshComplete();
     delete xml;
 }
