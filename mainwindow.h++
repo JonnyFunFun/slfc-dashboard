@@ -9,6 +9,7 @@
 #include "tickerhttpserver.h++"
 #include <QEventLoop>
 #include <QPair>
+#include <stdint.h>
 
 namespace Ui {
 class MainWindow;
