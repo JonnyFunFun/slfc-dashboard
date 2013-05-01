@@ -1,4 +1,4 @@
-#include "RFC3339.h++"
+#include "rfc3339.h++"
 #include <QDateTime>
 #include <QLocale>
 #include <QDebug>
