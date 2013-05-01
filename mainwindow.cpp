@@ -102,7 +102,7 @@ MainWindow::MainWindow(QWidget *parent) :
     this->setStyleSheet("background-color: black; color: white;");
 
     // Determine our constraints and calculate where our widgets are all going to be placed
-    ui->scrollText->setGeometry(0, qCeil(height()*0.9), width(), qCeil(height()*0.08));
+    ui->scrollText->setGeometry(0, qCeil(height()*0.9), width(), qCeil(height()*0.1));
     ui->scrollText->setFixedHeight(qCeil(height()*0.09));
 
     // Our stack
@@ -110,25 +110,25 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->stack->setStyleSheet("background-color: white!important; color: black!important;");
 
     // Page Labels
-    ui->upcomingEventsLabel->setGeometry(0, 0, width(), qFloor(height()*0.08));
-    ui->upcomingEventsLabel->setFont(QFont("Droid Sans Mono", height()*0.08));
-    ui->m6TakeHomeLabel->setGeometry(0, 0, width(), qFloor(height()*0.08));
-    ui->m6TakeHomeLabel->setFont(QFont("Droid Sans Mono", height()*0.08));
+    ui->upcomingEventsLabel->setGeometry(0, 0, width(), qFloor(height()*0.09));
+    ui->upcomingEventsLabel->setFont(QFont("Droid Sans Mono", height()*0.075));
+    ui->m6TakeHomeLabel->setGeometry(0, 0, width(), qFloor(height()*0.09));
+    ui->m6TakeHomeLabel->setFont(QFont("Droid Sans Mono", height()*0.075));
 
     // Upcoming events page
     ui->list_upcoming->setGeometry(0, qFloor(height()*0.08)+25, width(), height());
-    ui->list_upcoming->setFont(QFont("Droid Sans Mono", height()*0.07));
+    ui->list_upcoming->setFont(QFont("Droid Sans Mono", height()*0.06));
 
     // m6 Takehome page
     ui->list_m6takehome->setGeometry(0, qFloor(height()*0.08)+25, width(), height());
-    ui->list_m6takehome->setFont(QFont("Droid Sans Mono", height()*0.07));
+    ui->list_m6takehome->setFont(QFont("Droid Sans Mono", height()*0.06));
 
     // Active911 web view
     /*ui->active911WebView->setGeometry(0, 0, width(), height());
     ui->active911WebView->setUrl(QUrl("http://webview.active911.com/client/"));*/
 
     // Scrolling text
-    ui->scrollText->setFont(QFont("Droid Sans Mono", height()*0.075));
+    ui->scrollText->setFont(QFont("Droid Sans Mono", height()*0.07));
     ui->scrollText->setText("Loading...");
 
     // progress timer for switching between screens
