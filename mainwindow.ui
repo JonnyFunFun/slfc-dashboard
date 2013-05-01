@@ -120,7 +120,7 @@
        </rect>
       </property>
       <property name="text">
-       <string>23M6 Take-Home Schedule</string>
+       <string>23M6 Take-Home Shifts</string>
       </property>
       <property name="alignment">
        <set>Qt::AlignCenter</set>

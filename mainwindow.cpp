@@ -35,6 +35,10 @@ MainWindow::MainWindow(QWidget *parent) :
         return;
     }
 
+
+    // Load any saved data
+    loadPersistence();
+
     bool ok = true;
     uint32_t progressCycle = configDocument.documentElement().attributes().namedItem("cycleTime").nodeValue().toUInt(&ok);
     if (!ok)
@@ -85,10 +89,6 @@ MainWindow::MainWindow(QWidget *parent) :
         ticker_http = new TickerHttpServer(configDocument.documentElement().elementsByTagName("ticker").at(0).attributes().namedItem("httpPort").nodeValue().toInt(),
                                            configDocument.documentElement().elementsByTagName("ticker").at(0).attributes().namedItem("authToken").nodeValue(), this);
         connect(ticker_http, SIGNAL(newMessage(QString,QDateTime)), this, SLOT(handle_new_ticker_message(QString,QDateTime)));
-        tickerMessages.clear();
-        // Load any saved data
-        if (!loadPersistence())
-            tickerMessages.append(QPair<QString,QDateTime>("There are no ticker messages",QDateTime::currentDateTime()));
     } else {
         tickerMessages.clear();
         tickerMessages.append(QPair<QString,QDateTime>("Ticker server disabled",QDateTime::currentDateTime()));
@@ -117,11 +117,11 @@ MainWindow::MainWindow(QWidget *parent) :
 
     // Upcoming events page
     ui->list_upcoming->setGeometry(0, qFloor(height()*0.08)+25, width(), height());
-    ui->list_upcoming->setFont(QFont("Droid Sans Mono", height()*0.06));
+    ui->list_upcoming->setFont(QFont("Droid Sans Mono", height()*0.04));
 
     // m6 Takehome page
     ui->list_m6takehome->setGeometry(0, qFloor(height()*0.08)+25, width(), height());
-    ui->list_m6takehome->setFont(QFont("Droid Sans Mono", height()*0.06));
+    ui->list_m6takehome->setFont(QFont("Droid Sans Mono", height()*0.04));
 
     // Active911 web view
     /*ui->active911WebView->setGeometry(0, 0, width(), height());
@@ -148,7 +148,7 @@ MainWindow::MainWindow(QWidget *parent) :
     // start the timers up
     refreshTimer.start();
     progressTimer.start();
-
+    redrawTimer.start();
 }
 
 MainWindow::~MainWindow()
@@ -196,6 +196,7 @@ void MainWindow::handle_new_ticker_message(QString message, QDateTime expiration
             goodMessages.append(tickerMessages.at(i));
     }
     tickerMessages = goodMessages;
+    persistData();
     redraw();
 }
 
@@ -225,7 +226,8 @@ void MainWindow::redraw()
     if (ui->m6TakeHomePage) {
         if (m6calendar == 0) {
             ui->list_m6takehome->clear();
-            ui->list_m6takehome->addItem("There was an error loading the m6 calendar");
+            ui->list_m6takehome->addItem("There was an error");
+            ui->list_m6takehome->addItem("loading the m6 calendar");
         } else {
             ui->list_m6takehome->clear();
             ui->list_m6takehome->addItem(" ");
@@ -240,7 +242,8 @@ void MainWindow::redraw()
                         ui->list_m6takehome->addItem(QString("Next: %1").arg(upcoming.at(1)->title));
                         ui->list_m6takehome->addItem(QString("On %1 at %2").arg(upcoming.at(1)->start_date.toString("ddd MMM dd")).arg(upcoming.at(1)->start_date.toString("hh:mm")));
                     } else {
-                        ui->list_m6takehome->addItem("There are no upcoming shifts scheduled.");
+                        ui->list_m6takehome->addItem("There are no upcoming");
+                        ui->list_m6takehome->addItem("shifts scheduled.");
                     }
                 } else {
                     ui->list_m6takehome->addItem("No EMT currently assigned.");
@@ -249,12 +252,13 @@ void MainWindow::redraw()
                         ui->list_m6takehome->addItem(QString("Next: %1").arg(upcoming.at(0)->title));
                         ui->list_m6takehome->addItem(QString("On %1 at %2").arg(upcoming.at(0)->start_date.toString("ddd MMM dd")).arg(upcoming.at(0)->start_date.toString("hh:mm")));
                     } else {
-                        ui->list_m6takehome->addItem("There are no upcoming shifts scheduled.");
+                        ui->list_m6takehome->addItem("There are no upcoming");
+                        ui->list_m6takehome->addItem("shifts scheduled.");
                     }
                 }
             } else {
                 ui->list_m6takehome->addItem(" ");
-                ui->list_m6takehome->addItem("There are no scheduled shifts.");
+                ui->list_m6takehome->addItem("No shifts scheduled.");
             }
         }
     }
@@ -271,7 +275,6 @@ void MainWindow::redraw()
         ui->list_m6takehome->item(i)->setTextAlignment(Qt::AlignCenter);
 
     currentlyRedrawing = false;
-    persistData();
 }
 
 void MainWindow::persistData()
