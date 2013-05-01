@@ -8,8 +8,9 @@ class CalendarEvent
 {
 public:
     friend class CalendarEventComparator;
-    CalendarEvent(QString event_title, QDateTime start, QDateTime end);
+    CalendarEvent(QString event_title, QDateTime start, QDateTime end, QString cont);
     QString title;
+    QString content;
     QDateTime start_date;
     QDateTime end_date;
     QString toString();

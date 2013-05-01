@@ -67,11 +67,12 @@ void GoogleCalendar::dataDownloadComplete(QNetworkReply *rep)
     for (int i = 0; i < xml->documentElement().elementsByTagName("entry").count(); ++i) {
         QDomNode event = xml->documentElement().elementsByTagName("entry").at(i);
         QString title = event.firstChildElement("title").text();
+        QString content = event.firstChildElement("content").text();
         for (int x = 0; x < event.childNodes().count(); ++x) {
             if (event.childNodes().at(x).nodeName() == "gd:when") {
                 QDateTime start = RFC3339::fromString(event.childNodes().at(x).attributes().namedItem("startTime").nodeValue());
                 QDateTime end = RFC3339::fromString(event.childNodes().at(x).attributes().namedItem("endTime").nodeValue());
-                events.append(new CalendarEvent(title, start, end));
+                events.append(new CalendarEvent(title, start, end, content));
             }
         }
     }
