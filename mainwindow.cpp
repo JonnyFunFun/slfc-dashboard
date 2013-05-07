@@ -108,7 +108,7 @@ MainWindow::MainWindow(QWidget *parent) :
     // active911 web view
     active911DeviceId = configDocument.documentElement().elementsByTagName("active911").at(0).attributes().namedItem("deviceId").nodeValue();
 
-    //this->showFullScreen();
+    this->showFullScreen();
 
     this->setStyleSheet("background-color: black; color: white;");
 
