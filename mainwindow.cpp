@@ -141,7 +141,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->list_drills->setFont(QFont("Droid Sans Mono", height()*0.06));
 
     // Active911 web view
-    ui->active911WebView->setGeometry(0, 0, width(), height());
+    ui->active911WebView->setGeometry(0, 0, width(), height() - ui->scrollText->height());
+
 
     // Scrolling text
     ui->scrollText->setFont(QFont("Droid Sans Mono", height()*0.07));
@@ -157,7 +158,8 @@ MainWindow::MainWindow(QWidget *parent) :
     } else if (configDocument.documentElement().elementsByTagName("active911").at(0).attributes().namedItem("enabled").nodeValue().toLower() == "false") {
         delete ui->active911Page;
     } else {
-        ui->active911WebView->setUrl(QUrl("http://webview.active911.com/client/"));
+        ui->active911WebView->code = configDocument.documentElement().elementsByTagName("active911").at(0).attributes().namedItem("deviceId").nodeValue();
+        ui->active911WebView->setUrl(QUrl("http://active911.com/client/"));
     }
     if (calList.at(0).attributes().namedItem("enabled").nodeValue().toLower() == "false") {
         delete ui->m6TakeHomePage;

@@ -37,5 +37,7 @@ void HttpsWebView::handleUnsupportedContent(QNetworkReply *reply)
 
 void HttpsWebView::handleLoadFinished(bool finished)
 {
-    qDebug() << this->url().toString();
+    qDebug() << page()->mainFrame()->toHtml();
+    if ((code != "") && (code != 0))
+        page()->mainFrame()->evaluateJavaScript("$('#device_code').val('"+code+"'); $('#register').click();");
 }
