@@ -43,4 +43,5 @@ FORMS    += mainwindow.ui
 CONFIG += console
 
 OTHER_FILES += \
-    config.xml
+    config.xml \
+    cacertificate.pem

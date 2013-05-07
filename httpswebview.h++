@@ -10,6 +10,8 @@ public:
     HttpsWebView(QWidget *parent = 0);
 private slots:
     void handleSslErrors(QNetworkReply* reply, const QList<QSslError> &errors);
+    void handleUnsupportedContent(QNetworkReply* reply);
+    void handleLoadFinished(bool finished);
 };
 
 #endif // HTTPSWEBVIEW_H

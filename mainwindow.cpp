@@ -108,7 +108,7 @@ MainWindow::MainWindow(QWidget *parent) :
     // active911 web view
     active911DeviceId = configDocument.documentElement().elementsByTagName("active911").at(0).attributes().namedItem("deviceId").nodeValue();
 
-    this->showFullScreen();
+    //this->showFullScreen();
 
     this->setStyleSheet("background-color: black; color: white;");
 
@@ -141,8 +141,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->list_drills->setFont(QFont("Droid Sans Mono", height()*0.06));
 
     // Active911 web view
-    /*ui->active911WebView->setGeometry(0, 0, width(), height());
-    ui->active911WebView->setUrl(QUrl("http://webview.active911.com/client/"));*/
+    ui->active911WebView->setGeometry(0, 0, width(), height());
 
     // Scrolling text
     ui->scrollText->setFont(QFont("Droid Sans Mono", height()*0.07));
@@ -156,7 +155,9 @@ MainWindow::MainWindow(QWidget *parent) :
         //delete ui->active911page;
         qWarning() << "Device does not support SSL - disabling Active911";
     } else if (configDocument.documentElement().elementsByTagName("active911").at(0).attributes().namedItem("enabled").nodeValue().toLower() == "false") {
-        //delete ui->active911page;
+        delete ui->active911Page;
+    } else {
+        ui->active911WebView->setUrl(QUrl("http://webview.active911.com/client/"));
     }
     if (calList.at(0).attributes().namedItem("enabled").nodeValue().toLower() == "false") {
         delete ui->m6TakeHomePage;

@@ -76,7 +76,7 @@
      </rect>
     </property>
     <property name="currentIndex">
-     <number>1</number>
+     <number>3</number>
     </property>
     <widget class="QWidget" name="upcomingEventsPage">
      <widget class="QLabel" name="upcomingEventsLabel">
@@ -174,11 +174,47 @@
       </property>
      </widget>
     </widget>
+    <widget class="QWidget" name="active911Page">
+     <widget class="HttpsWebView" name="active911WebView">
+      <property name="geometry">
+       <rect>
+        <x>0</x>
+        <y>0</y>
+        <width>711</width>
+        <height>431</height>
+       </rect>
+      </property>
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="url">
+       <url>
+        <string>about:blank</string>
+       </url>
+      </property>
+      <property name="zoomFactor">
+       <double>0.750000000000000</double>
+      </property>
+     </widget>
+    </widget>
    </widget>
   </widget>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
+  <customwidget>
+   <class>QWebView</class>
+   <extends>QWidget</extends>
+   <header>QtWebKit/QWebView</header>
+  </customwidget>
+  <customwidget>
+   <class>HttpsWebView</class>
+   <extends>QWebView</extends>
+   <header location="global">httpswebview.h++</header>
+  </customwidget>
   <customwidget>
    <class>ScrollText</class>
    <extends>QWidget</extends>

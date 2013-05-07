@@ -9,7 +9,7 @@
     <drills enabled="true" calendar="https://www.google.com/calendar/feeds/9s1rlnck5e4pklk1kcfhtu8q34@group.calendar.google.com/private-68b90109298f240243b62b060f2855be/full"/>
     <m6takehome enabled="true" calendar="https://www.google.com/calendar/feeds/southlockportfire.com_91vcr9qle0nd63nk192v3hpln0@group.calendar.google.com/private-3c053ba45be96cb58dae4c8bd06d856e/full"/>
     <ticker enabled="true" httpPort="18888" authToken="boobies"/>
-    <active911 enabled="false" deviceId="65630-UISN"/>
+    <active911 enabled="true" deviceId="65630-UISN"/>
     <!-- future implementations -->
     <news enabled="false">
         <showlocal>true</showlocal>
