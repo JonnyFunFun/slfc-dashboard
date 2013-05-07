@@ -74,13 +74,24 @@ MainWindow::MainWindow(QWidget *parent) :
 
     // m6 takehome
     calList = configDocument.documentElement().elementsByTagName("m6takehome");
-    if (calList.count() > 0)
+    if ((calList.count() > 0) && (calList.at(0).attributes().namedItem("enabled").nodeValue().toLower() == "true"))
     {
         m6calendar = new GoogleCalendar(this, calList.at(0).attributes().namedItem("calendar").nodeValue());
         qDebug() << "Found M6 Takehome calendar.";
     } else {
         m6calendar = 0;
         qWarning() << "No M6 Takehome calendar found.";
+    }
+
+    // drills
+    calList = configDocument.documentElement().elementsByTagName("drills");
+    if ((calList.count() > 0) && (calList.at(0).attributes().namedItem("enabled").nodeValue().toLower() == "true"))
+    {
+        drillCalendar = new GoogleCalendar(this, calList.at(0).attributes().namedItem("calendar").nodeValue());
+        qDebug() << "Found drill calendar.";
+    } else {
+        drillCalendar = 0;
+        qWarning() << "No drill calendar found";
     }
 
     // http server
@@ -114,6 +125,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->upcomingEventsLabel->setFont(QFont("Droid Sans Mono", height()*0.075));
     ui->m6TakeHomeLabel->setGeometry(0, 0, width(), qFloor(height()*0.09));
     ui->m6TakeHomeLabel->setFont(QFont("Droid Sans Mono", height()*0.075));
+    ui->upcomingDrillsLabel->setGeometry(0, 0, width(), qFloor(height()*0.09));
+    ui->upcomingDrillsLabel->setFont(QFont("Droid Sans Mono", height()*0.075));
 
     // Upcoming events page
     ui->list_upcoming->setGeometry(0, qFloor(height()*0.08)+25, width(), height());
@@ -122,6 +135,10 @@ MainWindow::MainWindow(QWidget *parent) :
     // m6 Takehome page
     ui->list_m6takehome->setGeometry(0, qFloor(height()*0.08)+25, width(), height());
     ui->list_m6takehome->setFont(QFont("Droid Sans Mono", height()*0.04));
+
+    // upcoming drills
+    ui->list_drills->setGeometry(0, qFloor(height()*0.08)+25, width(), height());
+    ui->list_drills->setFont(QFont("Droid Sans Mono", height()*0.06));
 
     // Active911 web view
     /*ui->active911WebView->setGeometry(0, 0, width(), height());
@@ -260,6 +277,24 @@ void MainWindow::redraw()
                 ui->list_m6takehome->addItem(" ");
                 ui->list_m6takehome->addItem("No shifts scheduled.");
             }
+        }
+    }
+    // drills
+    if (ui->upcomingDrillsPage) {
+        ui->list_drills->clear();
+        QList<CalendarEvent*> drills = drillCalendar->upcoming(6);
+        for (int i = 0; i < drills.count(); ++i) {
+            if (drills.at(i)->start_date < QDateTime::currentDateTime()) {
+                // Event is current, highlight
+                QListWidgetItem* item = new QListWidgetItem(drills.at(i)->drillFormat());
+                item->setBackgroundColor(QColor(255, 255, 0, 128));
+                ui->list_drills->addItem(item);
+            } else if (drills.at(i)->isSpecialDrill()) {
+                QListWidgetItem* item = new QListWidgetItem(drills.at(i)->drillFormat());
+                item->setBackgroundColor(QColor(0, 255, 255, 128));
+                ui->list_drills->addItem(item);
+            } else
+                ui->list_drills->addItem(drills.at(i)->drillFormat());
         }
     }
 

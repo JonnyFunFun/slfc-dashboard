@@ -14,6 +14,8 @@ public:
     QDateTime start_date;
     QDateTime end_date;
     QString toString();
+    QString drillFormat();
+    bool isSpecialDrill();
 };
 
 class CalendarEventComparator

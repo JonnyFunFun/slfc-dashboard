@@ -36,6 +36,7 @@ private:
     QList<GoogleCalendar*> calendars;
     QList<QPair<QString,QDateTime> > tickerMessages;
     GoogleCalendar *m6calendar;
+    GoogleCalendar *drillCalendar;
     QEventLoop evloop;
     TickerHttpServer *ticker_http;
     QString active911DeviceId;

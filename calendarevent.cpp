@@ -18,6 +18,24 @@ QString CalendarEvent::toString()
         return QString("%1 - %2").arg(start_date.toString("MMM dd hh:mm"), title);
 }
 
+QString CalendarEvent::drillFormat()
+{
+    QString dateFormat;
+    if (isSpecialDrill())
+        dateFormat = "MMM dd hh:mm";
+    else
+        dateFormat = "MMM dd";
+    if ((content != "") && (content != 0))
+        return QString("%1 - %2\n\t%3").arg(start_date.toString(dateFormat), title, content);
+    else
+        return QString("%1 - %2").arg(start_date.toString(dateFormat), title);
+}
+
+bool CalendarEvent::isSpecialDrill()
+{
+    return (start_date.toString("hh:mm") != "00:00");
+}
+
 CalendarEventComparator::CalendarEventComparator() {}
 bool CalendarEventComparator::operator ()(const CalendarEvent *left, const CalendarEvent *right) const
 {
