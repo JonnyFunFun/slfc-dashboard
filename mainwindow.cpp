@@ -108,7 +108,9 @@ MainWindow::MainWindow(QWidget *parent) :
     // active911 web view
     active911DeviceId = configDocument.documentElement().elementsByTagName("active911").at(0).attributes().namedItem("deviceId").nodeValue();
 
+#if QT_NO_DEBUG
     this->showFullScreen();
+#endif
 
     this->setStyleSheet("background-color: black; color: white;");
 
@@ -138,7 +140,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     // upcoming drills
     ui->list_drills->setGeometry(0, qFloor(height()*0.08)+25, width(), height());
-    ui->list_drills->setFont(QFont("Droid Sans Mono", height()*0.06));
+    ui->list_drills->setFont(QFont("Droid Sans Mono", height()*0.04));
 
     // Active911 web view
     ui->active911WebView->setGeometry(0, 0, width(), height() - ui->scrollText->height());
@@ -268,7 +270,7 @@ void MainWindow::redraw()
                 } else {
                     ui->list_m6takehome->addItem("No EMT currently assigned.");
                     ui->list_m6takehome->addItem(" ");
-                    if (upcoming.count() == 1) {
+                    if (upcoming.count() >= 1) {
                         ui->list_m6takehome->addItem(QString("Next: %1").arg(upcoming.at(0)->title));
                         ui->list_m6takehome->addItem(QString("On %1 at %2").arg(upcoming.at(0)->start_date.toString("ddd MMM dd")).arg(upcoming.at(0)->start_date.toString("hh:mm")));
                     } else {
