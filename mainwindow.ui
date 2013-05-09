@@ -196,7 +196,7 @@
        </url>
       </property>
       <property name="zoomFactor">
-       <double>0.750000000000000</double>
+       <double>1.250000000000000</double>
       </property>
      </widget>
     </widget>
