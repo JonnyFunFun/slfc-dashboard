@@ -155,13 +155,17 @@ MainWindow::MainWindow(QWidget *parent) :
     progressTimer.setInterval(progressCycle * 1000);
 
     if (!QSslSocket::supportsSsl()) {
-        //delete ui->active911page;
+        delete ui->active911Page;
         qWarning() << "Device does not support SSL - disabling Active911";
     } else if (configDocument.documentElement().elementsByTagName("active911").at(0).attributes().namedItem("enabled").nodeValue().toLower() == "false") {
         delete ui->active911Page;
     } else {
         ui->active911WebView->code = configDocument.documentElement().elementsByTagName("active911").at(0).attributes().namedItem("deviceId").nodeValue();
         ui->active911WebView->setUrl(QUrl("http://active911.com/client/"));
+        // alerts
+        connect(ui->active911WebView, SIGNAL(alert()), this, SLOT(handleAlert()));
+        alertProceedTimer.setInterval(600000); // 10 minutes
+        connect(&alertProceedTimer, SIGNAL(timeout()), this, SLOT(clearAlertProceed()));
     }
     if (calList.at(0).attributes().namedItem("enabled").nodeValue().toLower() == "false") {
         delete ui->m6TakeHomePage;
@@ -363,4 +367,17 @@ bool MainWindow::loadPersistence()
         qWarning() << e.what();
         return false;
     }
+}
+
+void MainWindow::clearAlertProceed()
+{
+    alertProceedTimer.stop();
+    progressTimer.start();
+}
+
+void MainWindow::handleAlert()
+{
+    progressTimer.stop();
+    ui->stack->setCurrentWidget(ui->active911Page);
+    alertProceedTimer.start();
 }

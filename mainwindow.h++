@@ -26,12 +26,14 @@ public:
 public slots:
     virtual void redraw();
     virtual void persistData();
+    virtual void handleAlert();
 private:
     Ui::MainWindow *ui;
     bool currentlyRedrawing;
     QTimer refreshTimer;
     QTimer progressTimer;
     QTimer redrawTimer;
+    QTimer alertProceedTimer;
     QDomDocument configDocument;
     QList<GoogleCalendar*> calendars;
     QList<QPair<QString,QDateTime> > tickerMessages;
@@ -44,6 +46,7 @@ private slots:
     virtual void handle_new_ticker_message(QString message, QDateTime expiration);
     virtual void refresh_timer();
     virtual void progress_timer();
+    virtual void clearAlertProceed();
 };
 
 #endif // MAINWINDOW_H
