@@ -35,10 +35,6 @@ MainWindow::MainWindow(QWidget *parent) :
         return;
     }
 
-
-    // Load any saved data
-    loadPersistence();
-
     bool ok = true;
     uint32_t progressCycle = configDocument.documentElement().attributes().namedItem("cycleTime").nodeValue().toUInt(&ok);
     if (!ok)
@@ -104,6 +100,9 @@ MainWindow::MainWindow(QWidget *parent) :
         tickerMessages.clear();
         tickerMessages.append(QPair<QString,QDateTime>("Ticker server disabled",QDateTime::currentDateTime()));
     }
+
+    // Load any saved data
+    loadPersistence();
 
     // active911 web view
     active911DeviceId = configDocument.documentElement().elementsByTagName("active911").at(0).attributes().namedItem("deviceId").nodeValue();
@@ -259,7 +258,7 @@ void MainWindow::redraw()
             ui->list_m6takehome->addItem(" ");
             QList<CalendarEvent*> upcoming = m6calendar->upcoming(2);
             if (upcoming.count() >= 1) {
-                if (upcoming.at(0)->start_date < QDateTime::currentDateTime()) {
+                if ((upcoming.at(0)->start_date < QDateTime::currentDateTime()) && (upcoming.at(0)->end_date > QDateTime::currentDateTime())) {
                     // Currently signed out
                     ui->list_m6takehome->addItem(QString("Current EMT: %1").arg(upcoming.at(0)->title));
                     ui->list_m6takehome->addItem(QString("Until %1").arg(upcoming.at(0)->end_date.toString("hh:mm")));
@@ -311,7 +310,7 @@ void MainWindow::redraw()
     QString totalMessage;
     for (int i = 0; i < tickerMessages.count(); ++i)
         totalMessage += tickerMessages.at(i).first + "  ---  ";
-    totalMessage.chop(5);
+    totalMessage.chop(6);
     ui->scrollText->setText(totalMessage);
 
     // Center stuff
