@@ -73,6 +73,7 @@ MainWindow::MainWindow(QWidget *parent) :
     if ((calList.count() > 0) && (calList.at(0).attributes().namedItem("enabled").nodeValue().toLower() == "true"))
     {
         m6calendar = new GoogleCalendar(this, calList.at(0).attributes().namedItem("calendar").nodeValue());
+        connect(&refreshTimer, SIGNAL(timeout()), m6calendar, SLOT(refreshCalendar()));
         qDebug() << "Found M6 Takehome calendar.";
     } else {
         m6calendar = 0;
@@ -84,6 +85,7 @@ MainWindow::MainWindow(QWidget *parent) :
     if ((calList.count() > 0) && (calList.at(0).attributes().namedItem("enabled").nodeValue().toLower() == "true"))
     {
         drillCalendar = new GoogleCalendar(this, calList.at(0).attributes().namedItem("calendar").nodeValue());
+        connect(&refreshTimer, SIGNAL(timeout()), drillCalendar, SLOT(refreshCalendar()));
         qDebug() << "Found drill calendar.";
     } else {
         drillCalendar = 0;
